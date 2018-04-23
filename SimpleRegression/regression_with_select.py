@@ -3,13 +3,34 @@ import numpy as np
 import matplotlib.pyplot as plt
 rnd = np.random
 
-def func(x):
-	return 1.2*(x**2) + 1.56*x + 2.345 + rnd.randn()*2
+def get_func(n):
+	coeffs = [rnd.randn() for _ in range(n+1)]
+	print(coeffs)
+	def closure(x):
+		sum = 0
+		for i in range(n+1):
+			sum += coeffs[i]*(x**i) + rnd.randn()*2
+		return sum
+	return closure
+
+def build_model(n, X):
+	vars = [tf.Variable(rnd.randn(), name="w"+str(n), dtype=tf.float64) for i in range(n+1)]
+	#w1 = tf.Variable(rnd.randn(), name="w1", dtype=tf.float64)
+	#w2 = tf.Variable(rnd.randn(), name="w2", dtype=tf.float64)
+	#w3 = tf.Variable(rnd.randn(), name="w2", dtype=tf.float64)
+	#model = w1*tf.pow(X,2) + w2*X + w3
+	
+	model = vars[0]
+	for i in range(1, n+1):
+		model = tf.add(model, vars[i]*tf.pow(X,i))
+	return (model, vars)
+
+func = get_func(3)
 
 samples = 10
 step = 0.25
-learn_rate = 0.01
-train_epoch = 250
+learn_rate = 0.00001
+train_epoch = 500
 
 train_X = np.arange(-samples/2, samples/2, step)
 train_Y = np.asarray([func(x) for x in train_X])
@@ -17,14 +38,10 @@ test_X = np.arange(-samples/2+step/2, samples/2+step/2, step)
 test_Y = np.asarray([func(x) for x in test_X])
 samples_n = train_X.shape[0]
 
-w1 = tf.Variable(rnd.randn(), name="w1", dtype=tf.float64)
-w2 = tf.Variable(rnd.randn(), name="w2", dtype=tf.float64)
-w3 = tf.Variable(rnd.randn(), name="w2", dtype=tf.float64)
-
 X = tf.placeholder(dtype=tf.float64)
 Y = tf.placeholder(dtype=tf.float64)
 
-model = w1*X+w2 #w1*tf.pow(X,2) + w2*X + w3
+model, vars = build_model(3, X)
 loss = tf.reduce_sum(tf.pow(model-Y,2))/samples_n
 
 optimizer = tf.train.GradientDescentOptimizer(learn_rate).minimize(loss)
@@ -43,12 +60,12 @@ for i in range(train_epoch):
 		errors_history.append(sess.run(loss, feed_dict={X:test_X, Y: test_Y}))
 
 print('Optimization finished!')
-print('w1 = '+str(sess.run(w1)))
-print('w2 = '+str(sess.run(w2)))
+#print('w1 = '+str(sess.run(w1)))
+#print('w2 = '+str(sess.run(w2)))
 #print('w3 = '+str(sess.run(w3)))
 
 result_X = train_X
-result_Y = [x*sess.run(w1) + sess.run(w2) for x in result_X] #[(x**2)*sess.run(w1) + x*sess.run(w2) + sess.run(w3) for x in result_X]
+result_Y = [sess.run(model, feed_dict={X:x}) for x in result_X]
 
 plt.plot(train_X, train_Y, 'ro', label='Data set')
 plt.plot(result_X, result_Y, label='Result')

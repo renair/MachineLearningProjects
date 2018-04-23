@@ -13,8 +13,10 @@ def train_function2(x):
 def train_function3(x, A = 0.4, B = 0.4):
 	return A*x+ B
 
-datasetX = np.arange(0.0000001, 2, 0.025)
+datasetX = np.arange(0.0000001, 4, 0.025)
 datasetY = [train_function1(x) for x in datasetX]
+datasetY[3] = 100
+datasetY[15] = -100
 testH = 0.1
 window = cores.triangle_core
 
@@ -39,7 +41,7 @@ window = cores.triangle_core
 #fns.run_test(datasetX, train_function2, 0.1, cores.gaussian_core, drawPlot = False)
 #fns.run_test(datasetX, train_function3, 0.1, cores.gaussian_core, drawPlot = False)
 
-h = 2
-h = fns.train_h(datasetX, train_function2, h, cores.square_core)
-fns.run_test(datasetX, train_function2, h, cores.square_core, drawPlot = True)
+h = 0.08
+#h = fns.train_h(datasetX, train_function1, h, cores.triangle_core)
+fns.run_test(datasetX, train_function2, h, cores.triangle_core, drawPlot = True)
 print(h)

@@ -28,4 +28,4 @@ def bisquare_core(x, xi, h):
 
 def gaussian_core(x, xi, h):
 	r = get_r(x, xi, h)
-	return math.exp((-r)**2)
+	return math.exp(r**2)
